@@ -1,250 +1,225 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/common/Button';
 import { useAuthStore } from '../../store/authStore';
-import { Eye, EyeOff, Building2, Users, Lock } from 'lucide-react';
+import { Button } from '../../components/common/Button';
+import { Card } from '../../components/common/Card';
+import { Building2, User, Lock, Shield, Sparkles, TrendingUp, Package, Users } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginType, setLoginType] = useState<'company' | 'superadmin'>('company');
-  
+  const [isCompanyMode, setIsCompanyMode] = useState(true);
   const [formData, setFormData] = useState({
+    companyCode: '',
     email: '',
     password: '',
-    companyCode: '',
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // Mock user and company data
-      const mockUser = {
-        id: '1',
-        email: formData.email,
-        firstName: 'John',
-        lastName: 'Doe',
-        role: {
-          id: '1',
-          name: loginType === 'superadmin' ? 'Super Administrator' : 'Sales Director',
-          type: loginType === 'superadmin' ? 'SuperAdmin' as const : 'SalesDirector' as const,
-          permissions: [],
-        },
-        companyId: '1',
-        hierarchyPath: [],
-        permissions: [],
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+    setError('');
+    setLoading(true);
 
-      const mockCompany = {
-        id: '1',
-        name: 'Global FMCG Corp',
-        code: formData.companyCode || 'GFMCG',
-        currency: 'USD',
-        fiscalYearStart: new Date('2024-01-01'),
-        fiscalYearEnd: new Date('2024-12-31'),
-        settings: {
-          theme: {
-            primaryColor: '#3b82f6',
-            secondaryColor: '#64748b',
-            logo: '',
-            favicon: '',
-          },
-          features: {
-            budgetPlanning: true,
-            aiPromotion: true,
-            advancedAnalytics: true,
-            contractManagement: true,
-            competitorTracking: true,
-          },
-          integrations: {},
-          hierarchies: {
-            customerLevels: [],
-            productLevels: [],
-          },
-        },
-        licenses: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isActive: true,
-        type: 'hybrid' as const,
-      };
-
-      login(mockUser, mockCompany, 'mock-token');
-      setIsLoading(false);
-      navigate('/dashboard');
-    }, 1500);
+    try {
+      await login(
+        formData.email,
+        formData.password,
+        isCompanyMode ? formData.companyCode : undefined
+      );
+      navigate('/');
+    } catch (err) {
+      setError('Invalid credentials. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-xl shadow-lg mb-4">
-            <span className="text-white font-bold text-2xl">A</span>
+          <div className="flex justify-center mb-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-lg opacity-75"></div>
+              <div className="relative bg-gradient-to-r from-purple-600 to-pink-600 rounded-full p-4">
+                <Sparkles className="w-12 h-12 text-white" />
+              </div>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Acumen</h1>
-          <p className="text-gray-600 mt-2">Multi-Company FMCG Sales Platform</p>
+          <h1 className="text-5xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
+            Acumen
+          </h1>
+          <p className="text-gray-300">Enterprise FMCG Sales Intelligence Platform</p>
         </div>
 
-        {/* Login Type Selector */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1 mb-6">
-          <div className="grid grid-cols-2 gap-1">
-            <button
-              type="button"
-              onClick={() => setLoginType('company')}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all ${
-                loginType === 'company'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span className="text-sm font-medium">Company Login</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setLoginType('superadmin')}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all ${
-                loginType === 'superadmin'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <Lock className="w-4 h-4" />
-              <span className="text-sm font-medium">Super Admin</span>
-            </button>
+        <Card className="p-8 bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl">
+          <div className="flex justify-center mb-6">
+            <div className="flex bg-white/10 backdrop-blur rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setIsCompanyMode(true)}
+                className={`flex items-center px-4 py-2 rounded-md transition-all duration-200 ${
+                  isCompanyMode
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                Company User
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCompanyMode(false)}
+                className={`flex items-center px-4 py-2 rounded-md transition-all duration-200 ${
+                  !isCompanyMode
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Super Admin
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Login Form */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {loginType === 'company' && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isCompanyMode && (
               <div>
-                <label htmlFor="companyCode" className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-200 mb-1">
                   Company Code
                 </label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
-                    id="companyCode"
                     type="text"
                     value={formData.companyCode}
-                    onChange={(e) => setFormData({ ...formData, companyCode: e.target.value })}
-                    className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setFormData({ ...formData, companyCode: e.target.value })
+                    }
+                    className="w-full pl-10 pr-3 py-3 bg-white/10 backdrop-blur border border-white/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400"
                     placeholder="Enter company code"
-                    required={loginType === 'company'}
+                    required={isCompanyMode}
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-200 mb-1">
                 Email Address
               </label>
               <div className="relative">
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="john.doe@company.com"
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full pl-10 pr-3 py-3 bg-white/10 backdrop-blur border border-white/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400"
+                  placeholder="Enter your email"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-200 mb-1">
                 Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type="password"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="w-full pl-10 pr-3 py-3 bg-white/10 backdrop-blur border border-white/20 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400"
                   placeholder="Enter your password"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
-              </label>
-              <a href="#" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-                Forgot password?
-              </a>
-            </div>
+            {error && (
+              <div className="bg-red-500/20 backdrop-blur text-red-200 p-3 rounded-lg text-sm border border-red-500/30">
+                {error}
+              </div>
+            )}
 
             <Button
               type="submit"
-              className="w-full"
-              size="lg"
-              isLoading={isLoading}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-lg shadow-lg transform transition hover:scale-105"
+              disabled={loading}
             >
-              Sign In
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center mb-3">Demo Credentials</p>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Company Code:</span>
-                <code className="bg-gray-100 px-2 py-1 rounded">DEMO2024</code>
+          <div className="mt-6 pt-6 border-t border-white/20">
+            <p className="text-sm text-gray-300 text-center mb-4">
+              Demo Credentials:
+            </p>
+            {isCompanyMode ? (
+              <div className="space-y-2">
+                <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-sm">
+                  <p className="text-gray-200 font-semibold mb-1">Diplomat South Africa:</p>
+                  <p className="text-gray-300">Company: <span className="text-purple-300 font-mono">DIPLOMAT-SA</span></p>
+                  <p className="text-gray-300">Email: <span className="text-purple-300 font-mono">john.smith@diplomat.co.za</span></p>
+                  <p className="text-gray-300">Password: <span className="text-purple-300 font-mono">demo123</span></p>
+                </div>
+                <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-sm">
+                  <p className="text-gray-200 font-semibold mb-1">Legacy Demo:</p>
+                  <p className="text-gray-300">Company: <span className="text-purple-300 font-mono">DEMO2024</span></p>
+                  <p className="text-gray-300">Email: <span className="text-purple-300 font-mono">demo@acumen.com</span></p>
+                  <p className="text-gray-300">Password: <span className="text-purple-300 font-mono">demo123</span></p>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Email:</span>
-                <code className="bg-gray-100 px-2 py-1 rounded">demo@acumen.com</code>
+            ) : (
+              <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-sm">
+                <p className="text-gray-300">Email: <span className="text-purple-300 font-mono">admin@acumen.com</span></p>
+                <p className="text-gray-300">Password: <span className="text-purple-300 font-mono">admin123</span></p>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-600">Password:</span>
-                <code className="bg-gray-100 px-2 py-1 rounded">demo123</code>
-              </div>
-            </div>
+            )}
           </div>
-        </div>
+        </Card>
 
-        {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <a href="#" className="text-primary-600 hover:text-primary-700 font-medium">
-              Contact Sales
-            </a>
-          </p>
-          <p className="text-xs text-gray-500 mt-4">
-            © 2024 Acumen. All rights reserved.
-          </p>
+        {/* Feature highlights */}
+        <div className="mt-8 grid grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="bg-white/10 backdrop-blur rounded-lg p-3 mb-2">
+              <TrendingUp className="w-6 h-6 text-purple-400 mx-auto" />
+            </div>
+            <p className="text-xs text-gray-400">AI Analytics</p>
+          </div>
+          <div className="text-center">
+            <div className="bg-white/10 backdrop-blur rounded-lg p-3 mb-2">
+              <Package className="w-6 h-6 text-pink-400 mx-auto" />
+            </div>
+            <p className="text-xs text-gray-400">Multi-Tenant</p>
+          </div>
+          <div className="text-center">
+            <div className="bg-white/10 backdrop-blur rounded-lg p-3 mb-2">
+              <Users className="w-6 h-6 text-yellow-400 mx-auto" />
+            </div>
+            <p className="text-xs text-gray-400">Collaboration</p>
+          </div>
+          <div className="text-center">
+            <div className="bg-white/10 backdrop-blur rounded-lg p-3 mb-2">
+              <Sparkles className="w-6 h-6 text-green-400 mx-auto" />
+            </div>
+            <p className="text-xs text-gray-400">Smart Insights</p>
+          </div>
         </div>
       </div>
     </div>

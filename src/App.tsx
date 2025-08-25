@@ -7,7 +7,6 @@ import { Login } from './pages/auth/Login';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { BudgetOverview } from './pages/budget/BudgetOverview';
 import { PromotionPlanning } from './pages/promotion/PromotionPlanning';
-import './styles/globals.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
