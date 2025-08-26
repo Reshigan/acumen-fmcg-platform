@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
+import { Logo } from '../../components/common/Logo';
 import { Building2, User, Lock, Shield, Sparkles, TrendingUp, Package, Users } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -48,12 +49,7 @@ export const Login: React.FC = () => {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-lg opacity-75"></div>
-              <div className="relative bg-gradient-to-r from-purple-600 to-pink-600 rounded-full p-4">
-                <Sparkles className="w-12 h-12 text-white" />
-              </div>
-            </div>
+            <Logo size="xl" variant="icon" />
           </div>
           <h1 className="text-5xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
             Acumen
