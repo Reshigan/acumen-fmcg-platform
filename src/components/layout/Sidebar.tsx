@@ -1,388 +1,396 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Users,
-  Package,
-  DollarSign,
-  Target,
-  TrendingUp,
-  BarChart3,
+import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
+import { theme } from '../../styles/theme';
+import { NavLink, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Package, 
+  TrendingUp, 
+  Calendar,
   Settings,
-  ChevronDown,
+  ChevronLeft,
   ChevronRight,
-  Building2,
-  FileText,
-  Brain,
-  Shield,
-  Database,
-  Bell,
   LogOut,
-  Menu,
-  X,
+  Bell,
+  Search,
+  Plus
 } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { Logo } from '../common/Logo';
 import { useAuthStore } from '../../store/authStore';
 
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  path?: string;
-  children?: MenuItem[];
-  badge?: string | number;
-  permissions?: string[];
+interface SidebarProps {
+  isCollapsed?: boolean;
+  onToggle?: () => void;
 }
 
-const menuItems: MenuItem[] = [
+const SidebarContainer = styled(motion.aside)<{ isCollapsed: boolean }>`
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: ${props => props.isCollapsed ? '80px' : '280px'};
+  background: ${theme.colors.background.secondary};
+  border-right: 1px solid ${theme.colors.glass.border};
+  display: flex;
+  flex-direction: column;
+  z-index: ${theme.zIndex.dropdown};
+  transition: width ${theme.transitions.normal};
+`;
+
+const SidebarHeader = styled.div<{ isCollapsed: boolean }>`
+  padding: ${theme.spacing.xl};
+  border-bottom: 1px solid ${theme.colors.glass.border};
+  display: flex;
+  align-items: center;
+  justify-content: ${props => props.isCollapsed ? 'center' : 'space-between'};
+`;
+
+const ToggleButton = styled(motion.button)`
+  background: ${theme.colors.glass.background};
+  border: 1px solid ${theme.colors.glass.border};
+  border-radius: ${theme.borderRadius.lg};
+  padding: ${theme.spacing.sm};
+  color: ${theme.colors.text.secondary};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all ${theme.transitions.normal};
+  
+  &:hover {
+    background: ${theme.colors.primary.main};
+    color: white;
+    transform: scale(1.1);
+  }
+`;
+
+const SearchBar = styled(motion.div)<{ isCollapsed: boolean }>`
+  margin: ${theme.spacing.lg};
+  position: relative;
+  display: ${props => props.isCollapsed ? 'none' : 'block'};
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  padding-left: 40px;
+  background: ${theme.colors.glass.background};
+  border: 1px solid ${theme.colors.glass.border};
+  border-radius: ${theme.borderRadius.lg};
+  color: ${theme.colors.text.primary};
+  font-size: ${theme.typography.fontSize.sm};
+  transition: all ${theme.transitions.normal};
+  
+  &::placeholder {
+    color: ${theme.colors.text.tertiary};
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.primary.main};
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  }
+`;
+
+const SearchIcon = styled.div`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${theme.colors.text.tertiary};
+  
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const Navigation = styled.nav`
+  flex: 1;
+  padding: ${theme.spacing.lg};
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${theme.colors.primary.main};
+    border-radius: ${theme.borderRadius.full};
+  }
+`;
+
+const NavSection = styled.div`
+  margin-bottom: ${theme.spacing.xl};
+`;
+
+const NavSectionTitle = styled.div<{ isCollapsed: boolean }>`
+  color: ${theme.colors.text.tertiary};
+  font-size: ${theme.typography.fontSize.xs};
+  font-weight: ${theme.typography.fontWeight.semibold};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: ${theme.spacing.sm};
+  padding: 0 ${theme.spacing.sm};
+  display: ${props => props.isCollapsed ? 'none' : 'block'};
+`;
+
+const NavItem = styled(NavLink)<{ $isCollapsed: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.md};
+  padding: ${theme.spacing.md};
+  margin-bottom: ${theme.spacing.xs};
+  border-radius: ${theme.borderRadius.lg};
+  color: ${theme.colors.text.secondary};
+  text-decoration: none;
+  transition: all ${theme.transitions.normal};
+  position: relative;
+  justify-content: ${props => props.$isCollapsed ? 'center' : 'flex-start'};
+  
+  &:hover {
+    background: ${theme.colors.glass.background};
+    color: ${theme.colors.text.primary};
+    transform: translateX(${props => props.$isCollapsed ? '0' : '4px'});
+  }
+  
+  &.active {
+    background: linear-gradient(135deg, 
+      ${theme.colors.primary.main}20 0%, 
+      ${theme.colors.secondary.main}20 100%);
+    color: ${theme.colors.primary.light};
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 70%;
+      background: linear-gradient(180deg, 
+        ${theme.colors.primary.main} 0%, 
+        ${theme.colors.secondary.main} 100%);
+      border-radius: 0 ${theme.borderRadius.sm} ${theme.borderRadius.sm} 0;
+    }
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+`;
+
+const NavItemText = styled.span<{ isCollapsed: boolean }>`
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${theme.typography.fontWeight.medium};
+  display: ${props => props.isCollapsed ? 'none' : 'block'};
+  white-space: nowrap;
+`;
+
+const NavItemBadge = styled(motion.span)`
+  background: ${theme.colors.primary.main};
+  color: white;
+  font-size: ${theme.typography.fontSize.xs};
+  padding: 2px 6px;
+  border-radius: ${theme.borderRadius.full};
+  margin-left: auto;
+`;
+
+const SidebarFooter = styled.div<{ isCollapsed: boolean }>`
+  padding: ${theme.spacing.lg};
+  border-top: 1px solid ${theme.colors.glass.border};
+`;
+
+const UserProfile = styled.div<{ isCollapsed: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.md};
+  padding: ${theme.spacing.md};
+  background: ${theme.colors.glass.background};
+  border-radius: ${theme.borderRadius.lg};
+  margin-bottom: ${theme.spacing.md};
+  justify-content: ${props => props.isCollapsed ? 'center' : 'flex-start'};
+`;
+
+const UserAvatar = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: ${theme.borderRadius.full};
+  background: linear-gradient(135deg, 
+    ${theme.colors.primary.main} 0%, 
+    ${theme.colors.secondary.main} 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: ${theme.typography.fontWeight.bold};
+  flex-shrink: 0;
+`;
+
+const UserInfo = styled.div<{ isCollapsed: boolean }>`
+  display: ${props => props.isCollapsed ? 'none' : 'block'};
+`;
+
+const UserName = styled.div`
+  color: ${theme.colors.text.primary};
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${theme.typography.fontWeight.semibold};
+`;
+
+const UserRole = styled.div`
+  color: ${theme.colors.text.tertiary};
+  font-size: ${theme.typography.fontSize.xs};
+`;
+
+const QuickAction = styled(motion.button)`
+  width: 100%;
+  padding: ${theme.spacing.md};
+  background: linear-gradient(135deg, 
+    ${theme.colors.primary.main} 0%, 
+    ${theme.colors.secondary.main} 100%);
+  color: white;
+  border: none;
+  border-radius: ${theme.borderRadius.lg};
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${theme.typography.fontWeight.semibold};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${theme.spacing.sm};
+  transition: all ${theme.transitions.normal};
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${theme.shadows.lg}, ${theme.shadows.glow};
+  }
+`;
+
+const navigationItems = [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: <LayoutDashboard className="w-5 h-5" />,
-    path: '/dashboard',
-  },
-  {
-    id: 'master-data',
-    label: 'Master Data',
-    icon: <Database className="w-5 h-5" />,
-    children: [
-      {
-        id: 'customers',
-        label: 'Customers',
-        icon: <Building2 className="w-5 h-5" />,
-        path: '/mdm/customers',
-      },
-      {
-        id: 'products',
-        label: 'Products',
-        icon: <Package className="w-5 h-5" />,
-        path: '/mdm/products',
-      },
-      {
-        id: 'hierarchies',
-        label: 'Hierarchies',
-        icon: <ChevronDown className="w-5 h-5" />,
-        path: '/mdm/hierarchies',
-      },
+    section: 'Main',
+    items: [
+      { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/customers', label: 'Customers', icon: Users, badge: '12' },
+      { path: '/products', label: 'Products', icon: Package },
+      { path: '/promotions', label: 'Promotions', icon: TrendingUp, badge: '3' },
+      { path: '/calendar', label: 'Calendar', icon: Calendar },
     ],
   },
   {
-    id: 'budget',
-    label: 'Budget Planning',
-    icon: <DollarSign className="w-5 h-5" />,
-    children: [
-      {
-        id: 'budget-overview',
-        label: 'Overview',
-        icon: <BarChart3 className="w-5 h-5" />,
-        path: '/budget/overview',
-      },
-      {
-        id: 'budget-scenarios',
-        label: 'Scenarios',
-        icon: <Brain className="w-5 h-5" />,
-        path: '/budget/scenarios',
-      },
-      {
-        id: 'budget-allocation',
-        label: 'Allocation',
-        icon: <Target className="w-5 h-5" />,
-        path: '/budget/allocation',
-      },
-    ],
-  },
-  {
-    id: 'account',
-    label: 'Account Planning',
-    icon: <Target className="w-5 h-5" />,
-    children: [
-      {
-        id: 'account-plans',
-        label: 'Account Plans',
-        icon: <FileText className="w-5 h-5" />,
-        path: '/account/plans',
-      },
-      {
-        id: 'trading-terms',
-        label: 'Trading Terms',
-        icon: <DollarSign className="w-5 h-5" />,
-        path: '/account/trading-terms',
-      },
-      {
-        id: 'jbp',
-        label: 'Joint Business Planning',
-        icon: <Users className="w-5 h-5" />,
-        path: '/account/jbp',
-      },
-    ],
-  },
-  {
-    id: 'promotions',
-    label: 'Promotions',
-    icon: <TrendingUp className="w-5 h-5" />,
-    children: [
-      {
-        id: 'promo-planning',
-        label: 'Planning',
-        icon: <Target className="w-5 h-5" />,
-        path: '/promotion/planning',
-      },
-      {
-        id: 'promo-calendar',
-        label: 'Calendar',
-        icon: <FileText className="w-5 h-5" />,
-        path: '/promotion/calendar',
-      },
-      {
-        id: 'promo-ai',
-        label: 'AI Optimization',
-        icon: <Brain className="w-5 h-5" />,
-        path: '/promotion/ai-optimization',
-      },
-    ],
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: <BarChart3 className="w-5 h-5" />,
-    children: [
-      {
-        id: 'dashboards',
-        label: 'Dashboards',
-        icon: <LayoutDashboard className="w-5 h-5" />,
-        path: '/analytics/dashboards',
-      },
-      {
-        id: 'reports',
-        label: 'Reports',
-        icon: <FileText className="w-5 h-5" />,
-        path: '/analytics/reports',
-      },
-      {
-        id: 'insights',
-        label: 'AI Insights',
-        icon: <Brain className="w-5 h-5" />,
-        path: '/analytics/insights',
-      },
+    section: 'Management',
+    items: [
+      { path: '/budgets', label: 'Budgets', icon: TrendingUp },
+      { path: '/analytics', label: 'Analytics', icon: TrendingUp },
+      { path: '/settings', label: 'Settings', icon: Settings },
     ],
   },
 ];
 
-const adminMenuItems: MenuItem[] = [
-  {
-    id: 'admin',
-    label: 'Administration',
-    icon: <Shield className="w-5 h-5" />,
-    children: [
-      {
-        id: 'users',
-        label: 'Users',
-        icon: <Users className="w-5 h-5" />,
-        path: '/admin/users',
-      },
-      {
-        id: 'roles',
-        label: 'Roles & Permissions',
-        icon: <Shield className="w-5 h-5" />,
-        path: '/admin/roles',
-      },
-      {
-        id: 'company',
-        label: 'Company Settings',
-        icon: <Building2 className="w-5 h-5" />,
-        path: '/admin/company',
-      },
-      {
-        id: 'integrations',
-        label: 'Integrations',
-        icon: <Database className="w-5 h-5" />,
-        path: '/admin/integrations',
-      },
-    ],
-  },
-];
-
-export const Sidebar: React.FC = () => {
-  const navigate = useNavigate();
+export const Sidebar: React.FC<SidebarProps> = ({ 
+  isCollapsed: controlledCollapsed, 
+  onToggle 
+}) => {
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
   const location = useLocation();
-  const { user, company, logout } = useAuthStore();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['master-data']);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-
-  const toggleExpanded = (itemId: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
-    );
-  };
-
-  const handleNavigation = (path?: string) => {
-    if (path) {
-      navigate(path);
-      setIsMobileOpen(false);
+  const { user, logout } = useAuthStore();
+  
+  const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
+  
+  const handleToggle = () => {
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalCollapsed(!internalCollapsed);
     }
   };
-
-  const isActive = (path?: string) => {
-    return path ? location.pathname === path : false;
-  };
-
-  const isParentActive = (item: MenuItem) => {
-    if (item.children) {
-      return item.children.some((child) => isActive(child.path));
-    }
-    return false;
-  };
-
-  const renderMenuItem = (item: MenuItem, depth: number = 0) => {
-    const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.includes(item.id);
-    const active = isActive(item.path) || isParentActive(item);
-
-    return (
-      <div key={item.id}>
-        <button
-          onClick={() => {
-            if (hasChildren) {
-              toggleExpanded(item.id);
-            } else {
-              handleNavigation(item.path);
-            }
-          }}
-          className={cn(
-            'w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200',
-            depth > 0 && 'ml-4',
-            active
-              ? 'bg-primary-100 text-primary-700 font-medium'
-              : 'text-gray-700 hover:bg-gray-100'
-          )}
-        >
-          <div className="flex items-center gap-3">
-            {item.icon}
-            <span className="text-sm">{item.label}</span>
-            {item.badge && (
-              <span className="px-2 py-0.5 text-xs bg-primary-500 text-white rounded-full">
-                {item.badge}
-              </span>
-            )}
-          </div>
-          {hasChildren && (
-            <ChevronRight
-              className={cn(
-                'w-4 h-4 transition-transform duration-200',
-                isExpanded && 'rotate-90'
-              )}
-            />
-          )}
-        </button>
-        
-        {hasChildren && isExpanded && (
-          <div className="mt-1">
-            {item.children!.map((child) => renderMenuItem(child, depth + 1))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const allMenuItems = user?.role.type === 'CompanyAdmin' || user?.role.type === 'SuperAdmin'
-    ? [...menuItems, ...adminMenuItems]
-    : menuItems;
-
+  
   return (
-    <>
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
-      >
-        {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
-
-      {/* Overlay for mobile */}
-      {isMobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'fixed left-0 top-0 h-full bg-white border-r border-gray-200 z-40 transition-transform duration-300',
-          'w-64 overflow-y-auto',
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+    <SidebarContainer
+      isCollapsed={isCollapsed}
+      initial={{ x: -280 }}
+      animate={{ x: 0 }}
+      transition={{ type: 'spring', damping: 20 }}
+    >
+      <SidebarHeader isCollapsed={isCollapsed}>
+        {!isCollapsed && <Logo size="sm" variant="full" />}
+        <ToggleButton
+          onClick={handleToggle}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </ToggleButton>
+      </SidebarHeader>
+      
+      <SearchBar isCollapsed={isCollapsed}>
+        <SearchIcon>
+          <Search />
+        </SearchIcon>
+        <SearchInput placeholder="Search..." />
+      </SearchBar>
+      
+      <Navigation>
+        {navigationItems.map((section) => (
+          <NavSection key={section.section}>
+            <NavSectionTitle isCollapsed={isCollapsed}>
+              {section.section}
+            </NavSectionTitle>
+            {section.items.map((item) => (
+              <NavItem
+                key={item.path}
+                to={item.path}
+                $isCollapsed={isCollapsed}
+                className={location.pathname === item.path ? 'active' : ''}
+              >
+                <item.icon />
+                <NavItemText isCollapsed={isCollapsed}>
+                  {item.label}
+                </NavItemText>
+                {item.badge && !isCollapsed && (
+                  <NavItemBadge
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring' }}
+                  >
+                    {item.badge}
+                  </NavItemBadge>
+                )}
+              </NavItem>
+            ))}
+          </NavSection>
+        ))}
+      </Navigation>
+      
+      <SidebarFooter isCollapsed={isCollapsed}>
+        <UserProfile isCollapsed={isCollapsed}>
+          <UserAvatar>
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          </UserAvatar>
+          <UserInfo isCollapsed={isCollapsed}>
+            <UserName>{user?.name || 'User'}</UserName>
+            <UserRole>{user?.role || 'Role'}</UserRole>
+          </UserInfo>
+        </UserProfile>
+        
+        {!isCollapsed && (
+          <QuickAction
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Plus size={18} />
+            Quick Action
+          </QuickAction>
         )}
-      >
-        <div className="p-4">
-          {/* Logo and Company */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">A</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Acumen</h1>
-                <p className="text-xs text-gray-500">{company?.name || 'FMCG Platform'}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* User Info */}
-          <div className="mb-6 p-3 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary-200 rounded-full flex items-center justify-center">
-                <span className="text-primary-700 font-medium">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
-                </span>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="text-xs text-gray-500">{user?.role.name}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="space-y-1">
-            {allMenuItems.map((item) => renderMenuItem(item))}
-          </nav>
-
-          {/* Bottom Actions */}
-          <div className="mt-8 pt-4 border-t border-gray-200 space-y-2">
-            <button
-              onClick={() => handleNavigation('/notifications')}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="text-sm">Notifications</span>
-              <span className="ml-auto px-2 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                3
-              </span>
-            </button>
-            
-            <button
-              onClick={() => handleNavigation('/settings')}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Settings className="w-5 h-5" />
-              <span className="text-sm">Settings</span>
-            </button>
-            
-            <button
-              onClick={logout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="text-sm">Logout</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-    </>
+      </SidebarFooter>
+    </SidebarContainer>
   );
 };
