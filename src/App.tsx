@@ -5,8 +5,13 @@ import { useAuthStore } from './store/authStore';
 import { Layout } from './components/layout/Layout';
 import { Login } from './pages/auth/Login';
 import { Dashboard } from './pages/dashboard/Dashboard';
-import { BudgetOverview } from './pages/budget/BudgetOverview';
-import { PromotionPlanning } from './pages/promotion/PromotionPlanning';
+import { CustomersPage } from './pages/Customers';
+import { ProductsPage } from './pages/Products';
+import { PromotionsPage } from './pages/Promotions';
+import { CalendarPage } from './pages/Calendar';
+import { BudgetsPage } from './pages/Budgets';
+import { AnalyticsPage } from './pages/Analytics';
+import { SettingsPage } from './pages/Settings';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,44 +49,17 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="budget">
-              <Route path="overview" element={<BudgetOverview />} />
-              <Route path="scenarios" element={<div>Budget Scenarios - Coming Soon</div>} />
-              <Route path="allocation" element={<div>Budget Allocation - Coming Soon</div>} />
-            </Route>
-            <Route path="promotion">
-              <Route path="planning" element={<PromotionPlanning />} />
-              <Route path="calendar" element={<div>Promotion Calendar - Coming Soon</div>} />
-              <Route path="ai-optimization" element={<div>AI Optimization - Coming Soon</div>} />
-            </Route>
-            <Route path="account">
-              <Route path="plans" element={<div>Account Plans - Coming Soon</div>} />
-              <Route path="trading-terms" element={<div>Trading Terms - Coming Soon</div>} />
-              <Route path="jbp" element={<div>Joint Business Planning - Coming Soon</div>} />
-            </Route>
-            <Route path="mdm">
-              <Route path="customers" element={<div>Customer Management - Coming Soon</div>} />
-              <Route path="products" element={<div>Product Management - Coming Soon</div>} />
-              <Route path="hierarchies" element={<div>Hierarchy Management - Coming Soon</div>} />
-            </Route>
-            <Route path="analytics">
-              <Route path="dashboards" element={<div>Analytics Dashboards - Coming Soon</div>} />
-              <Route path="reports" element={<div>Reports - Coming Soon</div>} />
-              <Route path="insights" element={<div>AI Insights - Coming Soon</div>} />
-            </Route>
-            <Route path="admin">
-              <Route path="users" element={<div>User Management - Coming Soon</div>} />
-              <Route path="roles" element={<div>Roles & Permissions - Coming Soon</div>} />
-              <Route path="company" element={<div>Company Settings - Coming Soon</div>} />
-              <Route path="integrations" element={<div>Integrations - Coming Soon</div>} />
-            </Route>
-            <Route path="notifications" element={<div>Notifications - Coming Soon</div>} />
-            <Route path="settings" element={<div>Settings - Coming Soon</div>} />
+            <Route index element={<Dashboard />} />
+            <Route path="customers" element={<CustomersPage />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="promotions" element={<PromotionsPage />} />
+            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="budgets" element={<BudgetsPage />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
           
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </QueryClientProvider>
